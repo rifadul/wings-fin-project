@@ -1,19 +1,22 @@
 # DSE Real-Time Stock Chart
 
+> 📹 **Demo Video:** [Watch here](https://youtu.be/Wqrh904-jVk)
+> 🐙 **GitHub:** [Repository](https://github.com/rifadul/wings-fin-project)
+
 A real-time stock market chart application for the **Dhaka Stock Exchange (DSE)**.
 A backend simulator generates live price ticks during market hours, persists them
 to PostgreSQL, and streams them to a React chart over WebSocket. The chart also
 loads the day's history on mount and fills it in to a continuous 1-minute series.
 
-| Layer      | Tech                              |
-|------------|-----------------------------------|
-| Language   | TypeScript (frontend + backend)   |
-| Frontend   | React 18 + Vite, Recharts         |
-| Backend    | Node.js + Express (run via `tsx`) |
-| Database   | PostgreSQL 16                     |
-| ORM        | Prisma 5                          |
-| Real-time  | WebSocket (`ws` library)          |
-| Runtime    | Docker / Docker Compose           |
+| Layer     | Tech                              |
+| --------- | --------------------------------- |
+| Language  | TypeScript (frontend + backend)   |
+| Frontend  | React 18 + Vite, Recharts         |
+| Backend   | Node.js + Express (run via `tsx`) |
+| Database  | PostgreSQL 16                     |
+| ORM       | Prisma 5                          |
+| Real-time | WebSocket (`ws` library)          |
+| Runtime   | Docker / Docker Compose           |
 
 ---
 
@@ -82,15 +85,30 @@ Key behaviours:
 
 ---
 
-## 2. Run it with `docker compose up`
+## 2. Prerequisites
 
-**Prerequisites:** Docker with the Compose plugin.
+Before running the project, make sure you have the following installed:
+
+- **Docker Desktop** v4.x or later — [Download here](https://www.docker.com/products/docker-desktop)
+- **Docker Compose plugin** — included with Docker Desktop
+- **Git** — to clone the repository
+
+> No need to install Node.js, PostgreSQL, or any other dependencies locally.
+> Everything runs inside Docker containers.
+
+---
+
+## 3. Run it with `docker compose up`
 
 ```bash
-# 1. Configure environment (optional — sensible defaults are built in)
+# 1. Clone the repository
+git clone https://github.com/rifadul/wings-fin-project.git
+cd wings-fin-project
+
+# 2. Configure environment (optional — sensible defaults are built in)
 cp .env.example .env
 
-# 2. Build and start the whole stack
+# 3. Build and start the whole stack
 docker compose up --build
 ```
 
@@ -104,13 +122,13 @@ previous to be healthy:
 
 Open:
 
-| Service        | URL                                            |
-|----------------|------------------------------------------------|
-| Frontend       | <http://localhost:3000>                        |
-| Backend health | <http://localhost:4000/api/health>             |
-| Market status  | <http://localhost:4000/api/market-status>      |
-| History (index)| <http://localhost:4000/api/history/index/DSEX> |
-| History (stock)| <http://localhost:4000/api/history/stock/GP>   |
+| Service         | URL                                            |
+| --------------- | ---------------------------------------------- |
+| Frontend        | <http://localhost:3000>                        |
+| Backend health  | <http://localhost:4000/api/health>             |
+| Market status   | <http://localhost:4000/api/market-status>      |
+| History (index) | <http://localhost:4000/api/history/index/DSEX> |
+| History (stock) | <http://localhost:4000/api/history/stock/GP>   |
 
 Useful commands:
 
@@ -141,42 +159,42 @@ cd frontend && npm install && npm run dev
 
 ---
 
-## 3. Environment variables
+## 4. Environment variables
 
 All configuration is environment-driven. Copy `.env.example` to `.env` to
 override defaults. Compose substitutes these at startup.
 
 ### Market hours (shared by backend + frontend)
 
-| Variable             | Default     | Description                                                              |
-|----------------------|-------------|--------------------------------------------------------------------------|
-| `MARKET_OPEN_TIME`   | `10:00`     | Trading session start, 24h `HH:MM`, evaluated in `Asia/Dhaka`.           |
-| `MARKET_CLOSE_TIME`  | `14:20`     | Trading session end, 24h `HH:MM`, evaluated in `Asia/Dhaka`.             |
-| `MARKET_TIMEZONE`    | `Asia/Dhaka`| IANA timezone the open/close times are interpreted in.                   |
+| Variable            | Default      | Description                                                    |
+| ------------------- | ------------ | -------------------------------------------------------------- |
+| `MARKET_OPEN_TIME`  | `10:00`      | Trading session start, 24h `HH:MM`, evaluated in `Asia/Dhaka`. |
+| `MARKET_CLOSE_TIME` | `14:20`      | Trading session end, 24h `HH:MM`, evaluated in `Asia/Dhaka`.   |
+| `MARKET_TIMEZONE`   | `Asia/Dhaka` | IANA timezone the open/close times are interpreted in.         |
 
 These gate the simulator (it only writes while open) and the frontend's
 "Market is Closed" screen.
 
 ### Backend
 
-| Variable   | Default | Description                                                       |
-|------------|---------|-------------------------------------------------------------------|
-| `PORT`     | `4000`  | Port the Express **and** WebSocket server listen on (same port).  |
-| `DB_URL`   | see note| PostgreSQL connection string used by Prisma.                      |
+| Variable | Default  | Description                                                      |
+| -------- | -------- | ---------------------------------------------------------------- |
+| `PORT`   | `4000`   | Port the Express **and** WebSocket server listen on (same port). |
+| `DB_URL` | see note | PostgreSQL connection string used by Prisma.                     |
 
 > **`DB_URL` note (important):** Inside Docker, the backend reaches PostgreSQL at
 > the **internal** host `postgres:5432`. Compose builds this string automatically
 > from the `POSTGRES_*` values, so you normally don't set `DB_URL` yourself. The
 > `DB_URL` in `.env.example` (port **5433**) is for **host-side** tools (psql,
-> Prisma Studio) connecting to the *published* port — not for the container.
+> Prisma Studio) connecting to the _published_ port — not for the container.
 
 ### PostgreSQL (used by Compose to provision the DB)
 
-| Variable            | Default       | Description                  |
-|---------------------|---------------|------------------------------|
-| `POSTGRES_USER`     | `dse_user`    | Database user.               |
-| `POSTGRES_PASSWORD` | `dse_password`| Database password.           |
-| `POSTGRES_DB`       | `dse_market`  | Database name.               |
+| Variable            | Default        | Description        |
+| ------------------- | -------------- | ------------------ |
+| `POSTGRES_USER`     | `dse_user`     | Database user.     |
+| `POSTGRES_PASSWORD` | `dse_password` | Database password. |
+| `POSTGRES_DB`       | `dse_market`   | Database name.     |
 
 > Postgres is published on host port **5433** (`5433:5432`) to avoid clashing with
 > a local Postgres on 5432. Containers still talk to it on **5432** internally.
@@ -184,7 +202,7 @@ These gate the simulator (it only writes while open) and the frontend's
 ### Frontend (Vite — must be `VITE_`-prefixed to reach the browser)
 
 | Variable                 | Default                 | Description                                       |
-|--------------------------|-------------------------|---------------------------------------------------|
+| ------------------------ | ----------------------- | ------------------------------------------------- |
 | `VITE_API_URL`           | `http://localhost:4000` | Backend REST base URL (resolved in the browser).  |
 | `VITE_WS_URL`            | `ws://localhost:4000`   | Backend WebSocket base URL (resolved in browser). |
 | `VITE_MARKET_OPEN_TIME`  | `10:00`                 | Open time for the frontend's market check.        |
@@ -196,7 +214,7 @@ These gate the simulator (it only writes while open) and the frontend's
 
 ---
 
-## 4. How to test the live updates
+## 5. How to test the live updates
 
 Live ticks **only flow while the market is open** (per `MARKET_OPEN_TIME` /
 `MARKET_CLOSE_TIME` in Asia/Dhaka). There are two ways to see them:
@@ -238,7 +256,7 @@ import('ws').then(({WebSocket}) => {
   ws.on('open', () => { ws.send(JSON.stringify({subscribe:'DSEX'})); ws.send(JSON.stringify({subscribe:'GP'})); });
   ws.on('message', d => console.log(d.toString()));
 });"
-# → {\"type\":\"welcome\",...} {\"type\":\"subscribed\",...} {\"type\":\"tick\",\"symbol\":\"GP\",...}
+# → {"type":"welcome",...} {"type":"subscribed",...} {"type":"tick","symbol":"GP",...}
 ```
 
 Then reload the frontend — the chart will animate in real time. **Restore normal
@@ -267,8 +285,14 @@ You'll receive:
 
 ---
 
-## 5. Architecture & design
+## 6. Documentation (Architecture & design)
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the component overview,
-the simulator → DB → WebSocket → chart data flow, technology choices, and
-trade-offs — including a Mermaid diagram you can render directly.
+Full system design and engineering decisions are documented in:
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — covers:
+    - Component overview with architecture diagram
+    - End-to-end data flow (simulator → DB → WebSocket → chart)
+    - Technology choices and reasons
+    - Design decisions and trade-offs
+    - API and data contracts reference
+    - Known limitations and future improvements
