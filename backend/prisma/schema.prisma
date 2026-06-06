@@ -1,0 +1,40 @@
+// Prisma schema for the DSE real-time stock chart backend.
+//
+// Workflow:
+//   npx prisma migrate deploy   # apply committed migrations (prod / docker)
+//   npx prisma migrate dev      # create + apply a new migration (local dev)
+//   npx prisma generate         # (re)generate the typed client
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+/// Tick for a market index (e.g. DSEX). `time` is unix epoch milliseconds.
+model IndexTick {
+  id                                       Int    @id @default(autoincrement())
+  indexId                                  String @map("index_id")
+  time                                     BigInt
+  capitalValue                             Float  @map("capital_value")
+  percentageChangeFromYesterdayCloseValue  Float  @map("percentage_change_from_yesterday_close_value")
+  yesterdayCloseValue                      Float  @map("yesterday_close_value")
+
+  @@index([indexId, time])
+  @@map("index_ticks")
+}
+
+/// Tick for an individual stock. `time` is unix epoch milliseconds.
+model StockTick {
+  id                   Int    @id @default(autoincrement())
+  tradeCode            String @map("trade_code")
+  time                 BigInt
+  closePrice           Float  @map("close_price")
+  yesterdayClosePrice  Float  @map("yesterday_close_price")
+
+  @@index([tradeCode, time])
+  @@map("stock_ticks")
+}
