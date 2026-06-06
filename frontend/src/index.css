@@ -1,0 +1,181 @@
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background: #0f1419;
+  color: #e6e6e6;
+}
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.app__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #2a2f3a;
+  padding-bottom: 1rem;
+}
+
+.app__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app__error {
+  color: #ff9aa0;
+  background: #4a1f22;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+}
+
+/* ── status badge ── */
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot--on { background: #2ecc71; }
+.dot--off { background: #e67e22; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+.badge--on { background: #14502d; color: #7ef0a8; }
+.badge--off { background: #4a2c14; color: #ffce9a; }
+
+/* ── symbol dropdown ── */
+.symbol-dropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.symbol-dropdown__label { color: #8a93a3; }
+.symbol-dropdown__select {
+  background: #1b212c;
+  color: #e6e6e6;
+  border: 1px solid #2a2f3a;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+/* ── quote card ── */
+.quote-card {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #161b24;
+  border: 1px solid #1f2530;
+  border-radius: 12px;
+}
+.quote-card__title { color: #8a93a3; font-size: 0.9rem; }
+.quote-card__price { font-size: 2.4rem; font-weight: 700; margin: 0.2rem 0; }
+.quote-card__change { font-size: 1rem; font-weight: 600; }
+.quote-card__sub { color: #8a93a3; font-size: 0.85rem; margin-top: 0.4rem; }
+
+/* ── recent updates table ── */
+.recent { margin-top: 1.5rem; }
+.recent h2 { font-size: 1rem; color: #c7ccd6; }
+.recent__empty { color: #8a93a3; }
+.recent__table { width: 100%; border-collapse: collapse; }
+.recent__table th,
+.recent__table td {
+  text-align: left;
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid #1f2530;
+}
+.tag-live {
+  font-size: 0.7rem;
+  background: #14502d;
+  color: #7ef0a8;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+}
+
+.up { color: #2ecc71; }
+.down { color: #ff6b6b; }
+
+/* ── chart ── */
+.chart {
+  position: relative;
+  margin-top: 1.5rem;
+  padding: 1rem 0.5rem 0.5rem;
+  background: #121722;
+  border: 1px solid #1f2530;
+  border-radius: 12px;
+}
+
+/* latest value — top right corner of the chart */
+.chart__latest {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+  pointer-events: none;
+}
+.chart__latest-label { font-size: 0.7rem; color: #8a93a3; }
+.chart__latest-value { font-size: 1.6rem; font-weight: 700; }
+.chart__latest-time { font-size: 0.7rem; color: #8a93a3; }
+
+.chart-tooltip {
+  background: #0f1419;
+  border: 1px solid #2a2f3a;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+}
+.chart-tooltip__value { font-weight: 700; }
+.chart-tooltip__time { color: #8a93a3; }
+
+/* blinking heartbeat on the latest point only */
+.latest-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heartbeat 1.2s ease-out infinite;
+}
+@keyframes heartbeat {
+  0% { transform: scale(1); opacity: 0.7; }
+  70% { transform: scale(3.2); opacity: 0; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .latest-pulse { animation: none; }
+}
+
+/* ── market closed screen ── */
+.market-closed {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.market-closed__card {
+  text-align: center;
+  background: #161b24;
+  border: 1px solid #1f2530;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+}
+.market-closed__icon { font-size: 2.5rem; }
+.market-closed h1 { margin: 0.5rem 0; }
+.market-closed__hint { color: #8a93a3; font-size: 0.9rem; }

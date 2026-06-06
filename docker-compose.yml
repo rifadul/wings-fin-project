@@ -1,0 +1,96 @@
+# Full DSE stack — `docker compose up` brings up everything in order:
+#   postgres (healthy) → backend (migrate + seed + serve, healthy) → frontend
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: dse_postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-dse_user}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dse_password}
+            POSTGRES_DB: ${POSTGRES_DB:-dse_market}
+        ports:
+            # host:container — Postgres listens on 5432 inside the network; 5433 is
+            # only how the HOST reaches it (e.g. for local psql / prisma studio).
+            - '5433:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'pg_isready -U ${POSTGRES_USER:-dse_user} -d ${POSTGRES_DB:-dse_market}',
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+            args:
+                BACKEND_PORT: ${BACKEND_PORT:-4000}
+        container_name: dse_backend
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy # wait until Postgres accepts connections
+        environment:
+            BACKEND_PORT: ${BACKEND_PORT:-4000}
+            # In-network DB URL: always the postgres service on its INTERNAL port 5432,
+            # built from the POSTGRES_* values. Intentionally NOT inherited from a
+            # host-facing DB_URL in .env (which may target localhost:5433).
+            DB_URL: postgresql://${POSTGRES_USER:-dse_user}:${POSTGRES_PASSWORD:-dse_password}@postgres:5432/${POSTGRES_DB:-dse_market}?schema=public
+            MARKET_OPEN_TIME: ${MARKET_OPEN_TIME:-10:00}
+            MARKET_CLOSE_TIME: ${MARKET_CLOSE_TIME:-14:20}
+            MARKET_TIMEZONE: ${MARKET_TIMEZONE:-Asia/Dhaka}
+        ports:
+            - '${BACKEND_PORT:-4000}:${BACKEND_PORT:-4000}'
+        volumes:
+            - ./backend:/app
+            - /app/node_modules
+        healthcheck:
+            # Ready only once migrations + seed have run and the API is serving.
+            test:
+                [
+                    'CMD-SHELL',
+                    'node -e "fetch(''http://127.0.0.1:''+(process.env.BACKEND_PORT||4000)+''/api/health'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 40s # grace period for npm start + migrate + seed
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+            args:
+                FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+        container_name: dse_frontend
+        restart: unless-stopped
+        depends_on:
+            backend:
+                condition: service_healthy # start only after the backend is READY
+        environment:
+            # Vite dev-server port (host + container kept identical). Override with
+            # FRONTEND_PORT in .env, e.g. FRONTEND_PORT=3000.
+            FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+            # Browser-facing URLs — resolved on the user's host. The port auto-follows
+            # the backend's BACKEND_PORT, so changing it alone keeps these in sync. Set
+            # VITE_API_URL / VITE_WS_URL explicitly in .env only to point elsewhere.
+            VITE_API_URL: ${VITE_API_URL:-http://localhost:${BACKEND_PORT:-4000}}
+            VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:${BACKEND_PORT:-4000}}
+            # Market hours reuse the same values as the backend (single source).
+            VITE_MARKET_OPEN_TIME: ${MARKET_OPEN_TIME:-10:00}
+            VITE_MARKET_CLOSE_TIME: ${MARKET_CLOSE_TIME:-14:20}
+            VITE_MARKET_TIMEZONE: ${MARKET_TIMEZONE:-Asia/Dhaka}
+        ports:
+            - '${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}'
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+
+volumes:
+    postgres_data: # named volume — Postgres data survives `docker compose down`
