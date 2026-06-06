@@ -247,26 +247,3 @@ stock_ticks(id, trade_code, time BIGINT, close_price, yesterday_close_price)
 ```
 
 ---
-
-## 6. Drawing the architecture diagram visually
-
-The diagram in §1 is written in **Mermaid**, which is the recommended tool here:
-
-- **Mermaid** (<https://mermaid.live>) — text-based diagrams that render directly
-  in GitHub/GitLab Markdown and in the Mermaid Live Editor. The `flowchart`
-  block above is ready to paste. Best when you want the diagram to live **in the
-  repo** and stay diffable in version control.
-
-Good alternatives depending on your preference:
-
-- **Excalidraw** (<https://excalidraw.com>) — hand-drawn, whiteboard feel; great
-  for a quick, friendly diagram to drop into a slide or the README as a PNG/SVG.
-- **draw.io / diagrams.net** (<https://app.diagrams.net>) — full-featured boxes-
-  and-arrows editor with AWS/Azure/DB icon sets; exports SVG/PNG and can save the
-  source `.drawio` file in the repo.
-- **tldraw** (<https://tldraw.com>) — fast, modern infinite-canvas sketching.
-
-**Recommendation:** keep the **Mermaid** source in this file (it versions with the
-code and renders on GitHub automatically), and if you need a polished image for a
-presentation, recreate it in **Excalidraw** or **draw.io** and export an SVG into
-`docs/`.
